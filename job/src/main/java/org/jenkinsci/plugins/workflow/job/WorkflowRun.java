@@ -25,18 +25,22 @@
 package org.jenkinsci.plugins.workflow.job;
 
 import hudson.console.LineTransformationOutputStream;
+
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.actions.TimingAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionList;
+
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Main;
 import hudson.XmlFile;
 import hudson.console.AnnotatedLargeText;
+import hudson.model.AbstractBuild;
 import hudson.model.Computer;
 import hudson.model.Executor;
 import hudson.model.Queue;
@@ -51,6 +55,7 @@ import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.util.NullStream;
 import hudson.util.PersistedList;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -70,15 +75,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
+
 import jenkins.model.Jenkins;
 import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.util.Timer;
+
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -96,7 +104,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 
 @SuppressWarnings("SynchronizeOnNonFinalField")
 @SuppressFBWarnings(value="JLM_JSR166_UTILCONCURRENT_MONITORENTER", justification="completed is an unusual usage")
-public final class WorkflowRun extends Run<WorkflowJob,WorkflowRun> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<WorkflowJob,WorkflowRun> {
+public final class WorkflowRun extends AbstractBuild<WorkflowJob,WorkflowRun> implements Queue.Executable, LazyBuildMixIn.LazyLoadingRun<WorkflowJob,WorkflowRun> {
 
     private static final Logger LOGGER = Logger.getLogger(WorkflowRun.class.getName());
 
@@ -136,18 +144,6 @@ public final class WorkflowRun extends Run<WorkflowJob,WorkflowRun> implements Q
     public WorkflowRun(WorkflowJob job, File dir) throws IOException {
         super(job, dir);
         //System.err.printf("loaded %s @%h%n", this, this);
-    }
-
-    @Override public LazyBuildMixIn.RunMixIn<WorkflowJob,WorkflowRun> getRunMixIn() {
-        return runMixIn;
-    }
-
-    @Override protected BuildReference<WorkflowRun> createReference() {
-        return getRunMixIn().createReference();
-    }
-
-    @Override protected void dropLinks() {
-        getRunMixIn().dropLinks();
     }
 
     @Exported
